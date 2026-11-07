@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Neon Echo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Courier New', monospace; }
+        body { background: #000; color: #00ff66; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        #phone { width: 340px; height: 640px; background: #050d08; border: 4px solid #1a3a22; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; position: relative; box-shadow: 0 0 30px rgba(0,255,102,0.2); margin: auto; }
+        .screen { display: none; flex-direction: column; height: 100%; width: 100%; padding: 20px; position: absolute; top:0; left:0; }
+        .active { display: flex; }
+        #lock-screen { justify-content: center; align-items: center; text-align: center; }
+        #fingerprint { width: 80px; height: 80px; border: 2px dashed #00ff66; border-radius: 50%; margin-top: 40px; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 30px; animation: pulse 2s infinite; -webkit-tap-highlight-color: transparent; }
+        #chat-container { flex: 1; overflow-y: auto; padding-bottom: 20px; font-size: 13px; }
+        .msg { margin-bottom: 12px; line-height: 1.4; padding: 8px 12px; border-radius: 8px; max-width: 85%; }
+        .msg.anon { background: #0d1f13; border-left: 3px solid #00ff66; align-self: flex-start; }
+        .msg.player { background: #1f1429; border-right: 3px solid #ff007f; color: #ff007f; align-self: flex-end; margin-left: auto; }
+        .msg.sys { color: #ffcc00; text-align: center; max-width: 100%; font-size: 11px; }
+        #choice-box { display: flex; flex-direction: column; gap: 10px; }
+        button { background: #07140b; border: 1px solid #00ff66; color: #00ff66; padding: 10px; border-radius: 5px; cursor: pointer; font-size: 12px; }
+        #term-log { flex: 1; font-size: 12px; white-space: pre-line; color: #00e5ff; }
+        #nodes { display: flex; justify-content: space-around; margin-top: 20px; }
+        .node-btn { width: 50px; height: 50px; border-radius: 50%; border: 2px solid #00e5ff; color: #00e5ff; background: transparent; font-size: 16px; cursor: pointer; }
+        #glitch-screen { background: #000; color: #ff007f; justify-content: center; align-items: center; text-align: center; font-size: 14px; padding: 20px; }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 0.6; } 50% { transform: scale(1.05); opacity: 1; box-shadow: 0 0 15px #00ff66; } 100% { transform: scale(1); opacity: 0.6; } }
+    </style>
+</head>
+<body>
+<div id="phone">
+    <div id="lock-screen" class="screen active">
+        <h3 style="color:#ff3333">СИСТЕМА ЗАБЛОКИРОВАНА</h3>
+        <p style="font-size:11px; margin-top:10px; color:#666">Обнаружен чужой софт</p>
+        <div id="fingerprint" onclick="unlock()">👤</div>
+        <p style="margin-top:15px; font-size:11px">Нажмите на иконку</p>
+    </div>
+    <div id="messenger-screen" class="screen">
+        <div style="border-bottom: 1px solid #1a3a22; padding-bottom:10px; margin-bottom:10px; font-size:11px">🟢 [ID: СТЕРТО]</div>
+        <div id="chat-container"></div>
+        <div id="choice-box"><button id="optA" onclick="choose(true)"></button><button id="optB" onclick="choose(false)"></button></div>
+    </div>
+    <div id="terminal-screen" class="screen">
+        <div id="term-log"></div>
+        <div id="nodes">
+            <button class="node-btn" onclick="tapNode(0)">0</button>
+            <button class="node-btn" onclick="tapNode(1)">1</button>
+            <button class="node-btn" onclick="tapNode(2)">2</button>
+        </div>
+    </div>
+    <div id="glitch-screen" class="screen"><div id="final-text">Дешифровка нейросети...</div></div>
+</div>
+<script>
+    let step = 0;
+    let sequence = [];
+    const correctSeq =;
+
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+    function unlock() {
+        document.getElementById('fingerprint').innerText = "⏳";
+        setTimeout(() => { showScreen('messenger-screen'); playChat(); }, 1000);
+    }
+    async function typeMsg(sender, text, type) {
+        const container = document.getElementById('chat-container');
+        const msg = document.createElement('div');
+        msg.className = `msg ${type}`;
+        msg.innerHTML = `<b>${sender}:</b> `;
+        container.appendChild(msg);
+        for (let char of text) { msg.innerHTML += char; await new Promise(r => setTimeout(r, 15)); container.scrollTop = container.scrollHeight; }
+    }
+    function setChoices(a, b) {
+        document.getElementById('choice-box').style.display = 'flex';
+        document.getElementById('optA').innerText = a;
+        document.getElementById('optB').innerText = b;
+    }
+    async function playChat() {
+        document.getElementById('choice-box').style.display = 'none';
+        if (step === 0) {
+            await typeMsg("[ID: СТЕРТО]", "Калеб. Мне сказали, ты лучший чистильщик в Трущобах.", "anon");
+            setChoices("Что нужно стереть?", "Я занят. Ищи другого.");
+        } else if (step === 1) {
+            await typeMsg("[ID: СТЕРТО]", "[Перевод: +5000 кредитов]. Это аванс.", "anon");
+            await typeMsg("[ID: СТЕРТО]", "Мне принесли сырой слепок памяти Майи. Она слишком много знала о корпорации.", "anon");
+            setChoices("Начинаю взлом ядра.", "Рискованно. Корпораты отследят дамп.");
+        } else if (step === 2) {
+            await typeMsg("[ID: СТЕРТО]", "Просто делай свою работу. Время пошло.", "anon");
+            await typeMsg("СИСТЕМА", "[ПОЛУЧЕН ФАЙЛ: MAYA_DUMP.dat]", "sys");
+            setChoices("ЗАПУСТИТЬ ТЕРМИНАЛ", "ЗАПУСТИТЬ ТЕРМИНАЛ");
+        }
+    }
+    async function choose(isA) {
+        const text = isA ? document.getElementById('optA').innerText : document.getElementById('optB').innerText;
+        await typeMsg("Калеб", text, "player");
+        step++;
+        if (step <= 2) { setTimeout(playChat, 400); } else { showScreen('terminal-screen'); startTerminal(); }
+    }
+    function startTerminal() {
+        document.getElementById('term-log').innerText = "[СИСТЕМА]: Вход в матрицу сознания...\n[ВНИМАНИЕ]: Брандмауэр активен.\n\nВведите код доступа: 2 -> 0 -> 1\n\nЛоги:";
+    }
+    function tapNode(id) {
+        if(sequence.includes(id)) return;
+        sequence.push(id);
+        document.getElementById('term-log').innerText += `\nУзел [${id}] ок...`;
+        if(sequence.length === 3) {
+            if(JSON.stringify(sequence) === JSON.stringify(correctSeq)) { showScreen('glitch-screen'); runTwist(); } 
+            else { document.getElementById('term-log').innerText += `\n[ОШИБКА] Сброс!`; sequence = []; }
+        }
+    }
+    async function runTwist() {
+        const f = document.getElementById('final-text');
+        f.innerHTML = "[КРИТИЧЕСКИЙ СБОЙ]: Нейро-совпадение...";
+        await new Promise(r => setTimeout(r, 2000));
+        f.innerHTML = "Запись Майи:<br>'Они повсюду... Мне нужно спрятать слепок...'";
+        await new Promise(r => setTimeout(r, 3000));
+        f.innerHTML = "На видео появляется Калеб:<br><b>Калеб:</b> 'Извини, детка. Это просто бизнес'.";
+        await new Promise(r => setTimeout(r, 4000));
+        f.style.color = "#00e5ff";
+        f.innerHTML = "<b>Калеб:</b> 'Это запись двухдневной давности... Я напал на неё?! Моя память стерта!'";
+        await new Promise(r => setTimeout(r, 4000));
+        f.style.color = "#ffcc00";
+        f.innerHTML = "💬 Сообщение:<br>Ты вспомнил себя? Они уже идут. БЕГИ.";
+    }
+</script>
+</body>
+</html>
